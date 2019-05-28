@@ -1,6 +1,7 @@
 const express = require('express')
 const PORT = process.env.PORT || 4200;
 const CLUSTER_ID = process.env.CLUSTER_ID || "http://localhost:3000";
+var request = require('request');
 
 const app = express();
 const bodyparser = require('body-parser');
@@ -10,6 +11,7 @@ app.use(express.urlencoded({
     })); 
 
 app.use(express.static('kratos'))
+app.use(express.json());
 
 app.get("/users", (req, res) => {
     request(CLUSTER_ID + "/users", { json: true }, (err, resp, body) => {
@@ -20,25 +22,21 @@ app.get("/users", (req, res) => {
      }
      
     });
-}) 
-
-
-        // Parse JSON bodies (as sent by API clients)
-        app.use(express.json());
-        
-    app.post('/addUser', (req, res) => {
-        request.post({
-        url:CLUSTER_ID + '/addUser',
-        body: req.body,
-        json: true
-        }, function(err, resp, body){
-                if (err || !body) {
-                res.send("Error while getting users from "+CLUSTER_ID + '/addUser') 
-             } else{
-                 res.send(body);
-             }
-        })
-    }) 
+}); 
+   
+app.post('/addUser', (req, res) => {
+    request.post({
+    url:CLUSTER_ID + '/addUser',
+    body: req.body,
+    json: true
+    }, function(err, resp, body){
+            if (err || !body) {
+            res.send("Error while getting users from "+CLUSTER_ID + '/addUser') 
+         } else{
+             res.send(body);
+         }
+    })
+}); 
          
 
 app.get('/*', function(req, res) { 
