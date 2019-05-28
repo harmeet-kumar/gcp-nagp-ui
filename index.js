@@ -11,46 +11,35 @@ app.use(express.urlencoded({
 
 app.use(express.static('kratos'))
 
-app.get("/users", getAllUsers);
-app.post("/addUser", createNewUser);
+app.get("/users", (req, res) => {
+    request(CLUSTER_ID + "/users", { json: true }, (err, resp, body) => {
+     if (err || !body) {
+        res.send("Error while getting users from "+ CLUSTER_ID  + "/users" ) 
+     } else{
+         res.send(body);
+     }
+     
+    });
+}) 
 
-async function getAllUsers(req, res) {
-  let response = await getUsersFromSQL(req, res);
-  res.send(response);
-}
 
-let getUsersFromSQL = () => {
-  return new Promise((resolve, reject) => {
-    request(CLUSTER_ID + "/users", function(error, response, body) {
-      resolve(body);
-    });
-  });
-};
-
-async function createNewUser(req, res) {
-  let response = await createNewClusterUser(req.body);
-  res.send(response);
-}
-
-let createNewClusterUser = body => {
-  return new Promise((resolve, reject) => {
-    request(
-      {
-        url: CLUSTER_ID + "/addUser",
-        method: "POST",
-        headers: {
-          "content-type": "application/json"
-        },
-        json: body
-      },
-      function(err, httpResponse, body) {
-          console.log(err);
-          console.log(httpResponse);
-        resolve(body);
-      }
-    );
-  });
-};
+        // Parse JSON bodies (as sent by API clients)
+        app.use(express.json());
+        
+    app.post('/addUser', (req, res) => {
+        request.post({
+        url:CLUSTER_ID + '/addUser',
+        body: req.body,
+        json: true
+        }, function(err, resp, body){
+                if (err || !body) {
+                res.send("Error while getting users from "+CLUSTER_ID + '/addUser') 
+             } else{
+                 res.send(body);
+             }
+        })
+    }) 
+         
 
 app.get('/*', function(req, res) { 
 res.sendFile(__dirname + '/kratos/index.html')
